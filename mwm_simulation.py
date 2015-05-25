@@ -1,6 +1,7 @@
 import numpy as np
 import random as rand
 import scipy.stats as scist
+import networkx as nx
 
 _O = 0
 _A = 1
@@ -40,8 +41,28 @@ class utils:
     print ""
 
   @staticmethod
-  def true_with_probability(probability):
-    return np.random.uniform() <= probability
+  def make_match(pair_list, stats):
+    G = nx.Graph()
+    G.add_nodes_from(range(len(pair_list)))
+
+    for i in range(len(pair_list)):
+      for j in range(i + 1, len(pair_list)):
+        if pair_list[i].is_compatible(pair_list[j]):
+          G.add_edge(i, j)
+
+    matches = nx.max_weight_matching(G)
+    matches_pairs = matches.items()
+    matched = 0
+
+    for i in range(len(matches_pairs)):
+      if matches_pairs[i][0] <= matches_pairs[i][1]:
+        if matched < len(matches_pairs) / 2 - 1:
+          stats.exchange(pair_list[matches_pairs[i][0]], pair_list[matches_pairs[i][1]])
+        else:
+          stats.exchange(pair_list[matches_pairs[i][0]], pair_list[matches_pairs[i][1]], change_size=True)
+        matched += 1
+
+    return [pair_list[i] for i in range(len(pair_list)) if i not in matches]
 
 class blood_type:
   comp_matrix = [[True, True, True, True], [False, True, False, True], [False, False, True, True], [False, False, False, True]]
@@ -99,8 +120,9 @@ class stats_recorder:
     self.total_time += next_time
     self.current_count += 1
 
-  def exchange(self, pair1, pair2, self_exchange=False):
-    self.avg_size += self.current_count * self.current_time
+  def exchange(self, pair1, pair2, self_exchange=False, change_size=False):
+    if change_size:
+      self.avg_size += self.current_count * self.current_time
     self.exchange_matrix[pair1.donor.btype][pair2.patient.btype] += 1
     if not(self_exchange):
       self.exchange_matrix[pair2.donor.btype][pair1.patient.btype] += 1
@@ -110,7 +132,8 @@ class stats_recorder:
     else:
       self.current_count -= 2
 
-    self.current_time = 0
+    if change_size:
+      self.current_time = 0
 
   def finalize(self):
     self.avg_size += self.current_count * self.current_time    
@@ -119,28 +142,23 @@ class stats_recorder:
 
 def simulate(total_time=156):
   time = 0
+  next_match_time = 4
   waiting_queue = []
   stats = stats_recorder()
 
   while time < total_time:
+    if time >= next_match_time:
+      waiting_queue = utils.make_match(waiting_queue, stats)
+      next_match_time += 4
+
     npair, next_time = dp_pair.sample_dp_pair()
-    matched = -1
 
     stats.enter(npair, next_time)
 
-    if not(npair.is_compatible(npair)) or utils.true_with_probability(0.15):
-      for i in range(len(waiting_queue)):
-        if waiting_queue[i].is_compatible(npair) and utils.true_with_probability(0.75):
-          matched = i
-          break
-
-      if matched == -1:
-        waiting_queue.append(npair)
-      else:
-        stats.exchange(npair, waiting_queue[matched])
-        del waiting_queue[matched]
+    if not(npair.is_compatible(npair)):
+      waiting_queue.append(npair)
     else:
-      stats.exchange(npair, npair, self_exchange=True)
+      stats.exchange(npair, npair, self_exchange=True, change_size=True)
 
     time += next_time
 
@@ -149,7 +167,7 @@ def simulate(total_time=156):
   return (stats.avg_size, stats.current_count, stats.donor_count, stats.patient_count, stats.exchange_matrix)
 
 if __name__ == "__main__":
-  max_iter = 100
+  max_iter = 30
   avg_size_list = []
   final_list = []
   donor_list = []
@@ -165,7 +183,7 @@ if __name__ == "__main__":
     patient_list.append(np.array(patient))
     exchange_list.append(np.array(exchange))
 
-  print "        Homework 3 - Problem 1"
+  print "        Homework 3 - Problem 3"
   print "     Joao Ramos, Pedro Paredes"
   print ""
 
@@ -183,12 +201,12 @@ if __name__ == "__main__":
 
   print "Donor by blood type count average:"
   utils.padded_print("Types:", ['O', 'A', 'B', 'AB'], 7)
-  utils.padded_print("      ", sum(donor_list) / float(max_iter), 7)
+  utils.padded_print("      ", np.round(sum(donor_list) / float(max_iter)), 7)
   print ""
 
   print "Patient by blood type count average:"
   utils.padded_print("Types:", ['O', 'A', 'B', 'AB'], 7)
-  utils.padded_print("      ", sum(patient_list) / float(max_iter), 7)
+  utils.padded_print("      ", np.round(sum(patient_list) / float(max_iter)), 7)
   print ""
 
   print "Average exchanges by blood type in donor x patient matrix:"

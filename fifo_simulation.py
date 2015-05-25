@@ -98,7 +98,8 @@ class stats_recorder:
   def exchange(self, pair1, pair2, self_exchange=False):
     self.avg_size += self.current_count * self.current_time
     self.exchange_matrix[pair1.donor.btype][pair2.patient.btype] += 1
-    self.exchange_matrix[pair2.donor.btype][pair1.patient.btype] += 1
+    if not(self_exchange):
+      self.exchange_matrix[pair2.donor.btype][pair1.patient.btype] += 1
 
     if self_exchange:
       self.current_count -= 1
