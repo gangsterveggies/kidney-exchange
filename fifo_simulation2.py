@@ -39,6 +39,10 @@ class utils:
       print str(i).center(pad, " "),
     print ""
 
+  @staticmethod
+  def true_with_probability(probability):
+    return np.random.uniform() <= probability
+
 class blood_type:
   comp_matrix = [[True, True, True, True], [False, True, False, True], [False, False, True, True], [False, False, False, True]]
   perc_list = [(_O, 0.423), (_A, 0.464), (_B, 0.078), (_AB, 0.035)]
@@ -123,9 +127,9 @@ def simulate(total_time=156):
 
     stats.enter(npair, next_time)
 
-    if not(npair.is_compatible(npair)):
+    if not(npair.is_compatible(npair)) or utils.true_with_probability(0.15):
       for i in range(len(waiting_queue)):
-        if waiting_queue[i].is_compatible(npair):
+        if waiting_queue[i].is_compatible(npair) and utils.true_with_probability(0.75):
           matched = i
           break
 
