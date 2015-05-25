@@ -1,0 +1,38 @@
+        Homework 3 - Problem 1
+     Joao Ramos, Pedro Paredes
+
+Showing results after 1000 simulations
+Simulated over 3 years
+
+Average number of pairs in the waiting queue per week: 45
+95% Confidence interval for the average number of pairs in the waiting list per week: [44.50, 45.20]
+
+Average number of pairs in the waiting queue after the 3 years: 86
+95% Confidence interval for the average number of pairs in the waiting list after the 3 years: [84.97, 86.21]
+
+Donor by blood type count average:
+Types:    O       A       B       AB   
+       132.026  144.88  24.179  10.791 
+
+Patient by blood type count average:
+Types:    O       A       B       AB   
+       131.848 144.951  24.158  10.919 
+
+Average exchanges by blood type in donor x patient matrix:
+                    Patient
+Donor:    O       A       B       AB   
+  O  |   55.8   61.42   10.23    4.58  
+  A  |   0.0    76.66    0.0     5.11  
+  B  |   0.0     0.0    11.26    0.86  
+  AB |   0.0     0.0     0.0     0.38  
+
+Total average number of exchanges: 226.28
+
+Normalized average exchanges by blood type in donor x patient matrix:
+                    Patient
+Donor:    O       A       B       AB   
+  O  |   0.25    0.27    0.05    0.02  
+  A  |   0.0     0.34    0.0     0.02  
+  B  |   0.0     0.0     0.05    0.0   
+  AB |   0.0     0.0     0.0     0.0   
+

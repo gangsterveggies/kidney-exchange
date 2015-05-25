@@ -149,7 +149,7 @@ def simulate(total_time=156):
   return (stats.avg_size, stats.current_count, stats.donor_count, stats.patient_count, stats.exchange_matrix)
 
 if __name__ == "__main__":
-  max_iter = 100
+  max_iter = 1000
   avg_size_list = []
   final_list = []
   donor_list = []
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     patient_list.append(np.array(patient))
     exchange_list.append(np.array(exchange))
 
-  print "        Homework 3 - Problem 1"
+  print "        Homework 3 - Problem 2"
   print "     Joao Ramos, Pedro Paredes"
   print ""
 

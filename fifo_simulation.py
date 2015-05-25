@@ -145,7 +145,7 @@ def simulate(total_time=156):
   return (stats.avg_size, stats.current_count, stats.donor_count, stats.patient_count, stats.exchange_matrix)
 
 if __name__ == "__main__":
-  max_iter = 100
+  max_iter = 1000
   avg_size_list = []
   final_list = []
   donor_list = []

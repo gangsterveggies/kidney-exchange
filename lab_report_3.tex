@@ -1,0 +1,365 @@
+%----------------------------------------------------------------------------------------
+%	CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[10pt,a4paper,oneside]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{mathtools}
+\usepackage[a4paper,left=2cm,right=2cm,top=1.5cm,bottom=2.5cm]{geometry}
+
+%----------------------------------------------------------------------------------------
+%	INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{Métodos de Apoio à Decisão - Trabalho 3}
+
+\author{João Ramos\footnote{João Ramos -  201204672} e Pedro Paredes\footnote{Pedro Paredes - 201205725}, DCC - FCUP}
+
+\date{Maio 2015}
+
+\renewcommand\tablename{Tabela}
+
+\begin{document}
+
+\maketitle
+
+%----------------------------------------------------------------------------------------
+%	SECTION 0
+%----------------------------------------------------------------------------------------
+
+\section*{Introdução}
+
+Neste relatório descrevem-se as abordagens e resultados ao problema
+enunciado no trabalho 3 com os vários métodos descritos no enunciado.
+
+Todas as soluções foram implementadas na linguagem \texttt{Python},
+usando adicionalmente as seguintes conhecidas bibliotecas externas:
+\texttt{numpy}, \texttt{scipy} e \texttt{networkx}. O tipo de output
+de cada implementação é semelhante, mudando apenas os métodos base a
+usar.
+
+Anexo ao relatório estão 4 ficheiros de \texttt{Python} e 4 ficheiros
+\texttt{txt} com as soluções produzidas por cada um. O ficheiro
+\texttt{fifo\_simulation.py} corresponde à solução usando o método da
+alínea 1. O ficheiro \texttt{fifo\_simulation2.py} corresponde à
+solução usando o método da alínea 2. O ficheiro
+\texttt{mwm\_simulation.py} corresponde à solução usando o método da
+alínea 3. Finalmente, o ficheiro
+\texttt{mwm\_simulation\_alternative.py} corresponde a uma solução
+alternativa baseada no método da alínea 3, cuja descrição é feita numa
+secção futura.
+
+O resto do relatório está organizado da seguinte forma. A Secção
+\ref{sec:model1} descreve o modelo descrito na alínea 1 e os seus
+resultados. A Secção \ref{sec:model2} descreve o modelo descrito na
+alínea 2 e os seus resultados. A Secção \ref{sec:model3} descreve o
+modelo descrito na alínea 3 e os seus resultados, assim como algumas
+alternativas. Finalmente, a Secção \ref{sec:limits} descreve algumas
+das limitações do modelo assim como hipóteses que tiveram de ser
+assumidas, complementando a resposta a cada uma das alíneas do
+enunciado.
+ 
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+\section{Modelo FIFO Inicial}
+\label{sec:model1}
+
+O modelo simula a componente temporal do problema usando uma
+estratégia de \textit{next-event time advance}. Em cada iteração da
+simulação, é feita uma amostra da distribuição exponencial, usando os
+parâmetros de média descritos no enunciado, para determinar o tempo em
+que o próximo par entrará na fila e é gerado um par dador-paciente
+fazendo uma amostra de uma distribuição uniforme, de modo a respeitar
+as percentagens de ocorrência cada grupo sanguíneo na população
+portuguesa indicadas. A unidade de tempo considerada é a semana, sendo
+a mais apropriada de acordo com os valores do enunciado.
+
+Após obter cada par, são colocados na fila de espera, mas caso o dador
+seja compatível com o paciente do par, é logo retirado da fila
+(considerando que é feito um transplante entre os membros do
+par). Imediatamente é feita uma verificação se existe algum outro par
+que seja compatível com o recentemente inserido. Caso exista algum
+outro par compatível, então é feito um transplante cruzado entre os
+dois e ambos são retirados da fila de espera. Este processo é repetido
+até o tempo total da simulação chegar às 156 semanas (3 anos).
+
+O programa recolhe um conjunto de estatísticas em 1000 simulações
+realizadas, nomeadamente: a média de pares na fila de espera por
+semana, assim como um intervalo de confiança de 95\% para este valor;
+a média de pares na fila de espera no final da simulação, assim como
+um intervalo de confiança de 95\% para este valor; a média do número
+de dadores e de pacientes por cada grupo sanguíneo diferente; uma
+matriz de número de transplantes médio entre cada grupo sanguíneo,
+assim como o número total de transplantes e a mesma matriz normalizada
+pelo número total de transplantes.
+
+Os resultados obtidos por este modelo estão contidos no ficheiro
+\texttt{fifo\_simulation.txt}. A Tabela \ref{tab:t1} apresenta um
+sumário destes resultados.
+
+\begin{table}[h]
+  \centering
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    45
+    \caption{Média de pares na fila de espera por semana}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    86
+    \caption{Média de pares na fila de espera no final da simulação}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    $226.28$
+    \caption{Número total de transplantes}
+  \end{subtable}
+
+  \caption{Resultados da simulação}
+  \label{tab:t1}
+\end{table}
+
+Um problema que foi observado nos resultados e que acabou por
+introduzir alguma variação nos valores obtidos, é o facto de que
+alguns pares possíveis nunca saírem da fila de espera, nomeadamente os
+que têm pacientes do tipo \texttt{O} e dadores de outro tipo. Assim,
+estes tipos de par vão acumulando na fila de espera, aumentando tanto
+a média, como o número final de pares na fila de espera.
+
+Observando os resultados detalhados no ficheiro indicado, é possível
+notar que existe uma boa percentagem de transplantes que são feitos de
+dadores e pacientes do mesmo par, um resultado que foi confirmado por
+outras experiências feitas. Como seria de esperar pela percentagem de
+ocorrências de cada grupo sanguíneo, resultam numa maioria dos
+transplantes onde participa um indivíduo do tipo \texttt{O} ou
+\texttt{A}. Finalmente, é também de notar que os resultados são
+compatíveis com os parâmetros dados no enunciado, por exemplo, a média
+de chegada de pares por semana é de aproximadamente 2.
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
+
+\section{Modelo FIFO Corrigido}
+\label{sec:model2}
+
+Neste modelo corrigido, é utilizado como base o modelo da Secção
+\ref{sec:model1}. É introduzida uma correção quando é feita a
+comparação de compatibilidade, tanto para o caso dos elementos do par
+serem compatíveis considerando apenas o grupo sanguíneo como quando é
+feita a comparação do par com os restantes pares já na fila de
+espera.
+
+Os valores medidos são equivalentes aos medidos na secção anterior e a
+sua descrição é feita de modo semelhante.
+
+Os resultados obtidos por este modelo estão contidos no ficheiro
+\texttt{fifo\_simulation2.txt}. A Tabela \ref{tab:t2} apresenta um
+sumário destes resultados.
+
+\begin{table}[h]
+  \centering
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    42
+    \caption{Média de pares na fila de espera por semana}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    78
+    \caption{Média de pares na fila de espera no final da simulação}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    $235.43$
+    \caption{Número total de transplantes}
+  \end{subtable}
+
+  \caption{Resultados da simulação}
+  \label{tab:t2}
+\end{table}
+
+O resultado mais importante que foi obtido é que os resultados parecem
+ser ligeiramente mais favoráveis do que os do modelo
+anterior. Nomeadamente, as médias de pares na fila de espera
+diminuíram e o número de transplantes aumentou. Este resultado parece
+ser inconsistente com a descrição do modelo, visto que existe uma
+maior probabilidade de incompatibilidade. Porém, o que se observa é
+que alguns dos pares que eram anteriormente compatíveis entre si
+deixaram de o ser, mas vão emparelhar com outros pares da fila que no
+modelo anterior ficavam acumulados. Assim, o problema de acumulação de
+pares onde era impossível haver emparelhamento é diminuído, causando
+as melhorias nos resultados obtidos em relação ao modelo anterior que
+compensam a diminuição de compatibilidade.
+
+Novamente os resultados são compatíveis com os parâmetros do enunciado
+e são também compatíveis com os do modelo anterior.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3
+%----------------------------------------------------------------------------------------
+
+\section{Modelo de Emparelhamento Máximo}
+\label{sec:model3}
+
+No modelo de emparelhamento máximo são usados os mesmos métodos base
+para introduzir pares na fila e para determinar os tempos em que cada
+par chega. A única diferença está no método de emparelhamento que já
+não é feito de uma maneira FIFO.
+
+O tempo da simulação é seguido e, quando este passa mais 4 semanas, é
+feito um emparelhamento máximo entre os elementos que estão na fila. É
+inicialmente construído um grafo onde cada par é representado por um
+vértice e há uma aresta entre dois pares caso sejam compatíveis. É
+corrido um algoritmo de emparelhamento máximo e os pares que o
+algoritmo indica são retirados da fila, sendo feito um transplante
+cruzado entre cada dois. É de notar que neste método os elementos de
+pares compatíveis entre si continuam a ser imediatamente emparelhados
+logo que entrem na fila.
+
+As estatísticas e valores medidos são os mesmos que nas secções
+anteriores. Porém, para este modelo são feitas apenas 100 simulações,
+visto que o uso do algoritmo de emparelhamento máximo torna cada
+simulação menos eficiente e por isso o modelo em geral é mais lento.
+
+Os resultados obtidos por este modelo estão contidos no ficheiro
+\texttt{mwm\_simulation.txt}. A Tabela \ref{tab:t3} apresenta um
+sumário destes resultados.
+
+\begin{table}[h]
+  \centering
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    45
+    \caption{Média de pares na fila de espera por semana}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    86
+    \caption{Média de pares na fila de espera no final da simulação}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    $225.84$
+    \caption{Número total de transplantes}
+  \end{subtable}
+
+  \caption{Resultados da simulação}
+  \label{tab:t3}
+\end{table}
+
+O resultado mais importante para esta simulação é o facto que os
+resultados serem muito próximos dos obtidos no modelo da Secção
+\ref{sec:model1}. Isto será devido ao facto que ambos os modelos
+emparelham a totalidade dos pares disponíveis, mas que os pares que
+são acumulados na fila dominam as estatísticas e são assim comuns aos
+dois modelos.
+
+Para verificar a afirmação feita no parágrafo anterior, foi feito um
+modelo alternativo onde os pares que são compatíveis com si próprios
+não são retirados imediatamente na fila, mas são colocados na fila e
+ao fim de 4 semanas se não forem emparelhados com outro par, é feito
+um transplante entre membros do mesmo par. Os resultados deste modelo
+estão contidos no ficheiro \texttt{mwm\_simulation\_alternative.txt} e
+a Tabela \ref{tab:t4} apresenta um sumário dos mesmos.
+
+\begin{table}[h]
+  \centering
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    18
+    \caption{Média de pares na fila de espera por semana}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    27
+    \caption{Média de pares na fila de espera no final da simulação}
+  \end{subtable}
+  ~
+  \begin{subtable}[h]{0.3\textwidth}
+    \centering
+    $283.38$
+    \caption{Número total de transplantes}
+  \end{subtable}
+
+  \caption{Resultados da simulação}
+  \label{tab:t4}
+\end{table}
+
+Os resultados foram muito melhores, obtendo menos de metade da média
+de pares na fila de espera em ambas as medidas e um aumento no número
+de transplantes. Os resultados detalhados ajudam a concluir que de
+facto a acumulação de pares na fila diminui, pois, por exemplo, o
+número de transplantes de dadores do grupo sanguíneo \texttt{O} para
+pacientes do mesmo grupo \texttt{O} aumentou
+consideravelmente. Confirma-se assim o \textit{bottleneck} introduzido
+pela acumulação descrita.
+
+É de notar que esta simulação alternativa introduz algum erro nos
+resultados dos outros modelos em comparação com a situação real, pois
+é provável que se um par dador-paciente é compatível entre si, então
+quererá efetuar o transplante entre si. O modelo foi construído apenas
+para verificar o problema da acumulação de pares.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4
+%----------------------------------------------------------------------------------------
+
+\section{Limitações e Hipóteses dos Modelos}
+\label{sec:limits}
+
+Terminamos a discussão referindo algumas limitações e hipóteses que
+são assumidas pelos modelos. Primeiramente é de referir que a
+compatibilidade entre um dador e um paciente é determinada por vários
+fatores além dos grupos sanguíneos. Ainda que o modelo da Secção
+\ref{sec:model2} aborde esta limitação, continua a ser uma redução da
+realidade. Ainda assim, a simulação não deve afastar-se muito dos
+valores reais.
+
+Um conjunto de características que foram desprezadas foram questões
+ambientais. Por exemplo, a localização geográfica dos elementos de
+cada par é um fator importante, pois dever-se-á preferir pares mais
+próximos. Mais do que uma preferência, pode haver uma impossibilidade
+de deslocação entre distâncias muito grandes, aumentando assim ainda
+mais a probabilidade de incompatibilidade.
+
+Uma solução alternativa seria estender os modelos apresentados. Ambos
+os modelos fazem emparelhamentos dois a dois, mas poder-se-ia
+considerar um modelo que encontra ciclos entre pares de tamanho maior
+que dois, otimizando mais os emparelhamentos possíveis (a solução não
+iria ser muito diferente da do modelo da Secção \ref{sec:model3},
+usando algoritmos de emparelhamento máximo de formas
+diferentes). Claro que se introduziriam outros desafios neste modelo,
+por exemplo, o tamanho dos ciclos teria de ser limitado (seria pouco
+prático considerar um ciclo de transplantes de 100 pessoas, por
+exemplo), mas iria melhorar os resultados dos modelos do trabalho.
+
+\section*{Conclusão}
+
+Concluímos com algumas notas. Foi possível utilizar métodos de
+simulação para estudar características de filas de espera num contexto
+de transplantes de rins entre pares de dadores e pacientes. Apesar de
+os resultados obtidos serem coerentes com os parâmetros indicados, o
+problema da acumulação de pares deteriorou os resultados obtidos.
+
+\end{document}

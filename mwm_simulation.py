@@ -162,12 +162,16 @@ def simulate(total_time=156):
 
     time += next_time
 
+  if total_time >= next_match_time:
+    waiting_queue = utils.make_match(waiting_queue, stats)
+    next_match_time += 4
+
   stats.finalize()
 
   return (stats.avg_size, stats.current_count, stats.donor_count, stats.patient_count, stats.exchange_matrix)
 
 if __name__ == "__main__":
-  max_iter = 30
+  max_iter = 100
   avg_size_list = []
   final_list = []
   donor_list = []
